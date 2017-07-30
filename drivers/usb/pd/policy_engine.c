@@ -10,6 +10,8 @@
  * GNU General Public License for more details.
  */
 
+#define DEBUG
+
 #include <linux/completion.h>
 #include <linux/delay.h>
 #include <linux/hrtimer.h>
@@ -124,6 +126,23 @@ enum usbpd_control_msg_type {
 	MSG_VCONN_SWAP,
 	MSG_WAIT,
 	MSG_SOFT_RESET,
+};
+
+static const char * const usbpd_control_msg_type_strings[] = {
+	"MSG_RESERVED",
+	"MSG_GOODCRC",
+	"MSG_GOTOMIN",
+	"MSG_ACCEPT",
+	"MSG_REJECT",
+	"MSG_PING",
+	"MSG_PS_RDY",
+	"MSG_GET_SOURCE_CAP",
+	"MSG_GET_SINK_CAP",
+	"MSG_DR_SWAP",
+	"MSG_PR_SWAP",
+	"MSG_VCONN_SWAP",
+	"MSG_WAIT",
+	"MSG_SOFT_RESET",
 };
 
 enum usbpd_data_msg_type {
@@ -316,6 +335,7 @@ struct usbpd {
 	struct extcon_dev	*extcon;
 
 	enum usbpd_state	current_state;
+	enum usbpd_control_msg_type  	received_message;
 	bool			hard_reset_recvd;
 	struct list_head	rx_q;
 	spinlock_t		rx_lock;
@@ -731,8 +751,8 @@ static void phy_msg_received(struct usbpd *pd, enum pd_msg_type type,
 	list_add_tail(&rx_msg->entry, &pd->rx_q);
 	spin_unlock_irqrestore(&pd->rx_lock, flags);
 
-	usbpd_dbg(&pd->dev, "received message: type(%d) len(%d)\n",
-			rx_msg->type, rx_msg->len);
+	usbpd_dbg(&pd->dev, "received message: type(%d) len(%d) %s\n",
+			rx_msg->type, rx_msg->len, usbpd_control_msg_type_strings[rx_msg->type]);
 
 	kick_sm(pd, 0);
 }
