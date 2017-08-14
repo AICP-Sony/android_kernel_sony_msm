@@ -2963,6 +2963,7 @@
 &sdhc_2 {
 	qcom,sdr104-wa;
 	cd-gpios = <&tlmm 95 0x0>;
+	uim2-gpios = <&tlmm 39 0x0>;
 };
 
 &spmi_bus {
